@@ -16,13 +16,9 @@ import LandingPage from "./pages/LandingPage";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Profile from "./pages/ProfilePage";
-import MyLabs from "./pages/MyLabsPage";
 import MyArticles from "./pages/MyArticlesPage";
-import AllLabs from "./pages/AllLabsPage";
 import AllArticles from "./pages/AllArticlesPage";
-import LabPage from "./pages/LabPage";
 import ArticlePage from "./pages/ArticlePage";
-import CreateLabPage from "./pages/CreateLabPage";
 import CreateArticlePage from "./pages/CreateArticlePage";
 import MySubmissionsPage from "./pages/MySubmissionsPage";
 import SubmissionPage from "./pages/SubmissionPage";
@@ -252,10 +248,7 @@ function AppContent() {
             <Route path="/signup" element={<PublicOnlyRoute><SignUp /></PublicOnlyRoute>} />
             <Route path="/signin" element={<PublicOnlyRoute><SignIn /></PublicOnlyRoute>} />
             <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/my-labs" element={<ProtectedRoute><MyLabs /></ProtectedRoute>} />
-            <Route path="/all-labs" element={<ProtectedRoute><AllLabs /></ProtectedRoute>} />
-            <Route path="/create-lab" element={<ProtectedRoute><CreateLabPage /></ProtectedRoute>} />
-            <Route path="/lab/:id" element={<ProtectedRoute><LabPage /></ProtectedRoute>} />
+            
             <Route path="/my-articles" element={<ProtectedRoute><MyArticles /></ProtectedRoute>} />
             <Route path="/all-articles" element={<ProtectedRoute><AllArticles /></ProtectedRoute>} />
             <Route path="/article/:id" element={<ProtectedRoute><ArticlePage /></ProtectedRoute>} />

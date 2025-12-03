@@ -49,13 +49,10 @@ export default function Sidebar({
 
   const navItems = [
     { path: "/home", name: "Home" },
-    { path: "/all-labs", name: "All Labs" },
     { path: "/all-articles", name: "All Articles" },
-    { path: "/reviews", name: "Review Queue"},
     {
       name: "Create",
       dropdown: [
-        { path: "/create-lab", name: "Create Lab" },
         { path: "/create-article", name: "Create Article" },
       ],
     },
@@ -63,7 +60,6 @@ export default function Sidebar({
 
   const profileDropdownItems = [    
     { path: "/profile", name: "Change Info" },
-    { path: "/my-labs", name: "My Labs" },
     { path: "/my-articles", name: "My Articles" },
     { path: "/submissions/my", name: "My Submissions" },
     { path: "/feedback/my", name: "My Feedbacks" },

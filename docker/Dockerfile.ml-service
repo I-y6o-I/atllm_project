@@ -1,0 +1,22 @@
+FROM python:3.11-slim-bookworm
+
+# Create non-root user
+RUN useradd --create-home appuser
+WORKDIR /home/appuser/app
+
+# Minimal tools
+RUN apt-get update && apt-get install -y --no-install-recommends dos2unix curl netcat-openbsd && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy app and install deps
+COPY --chown=appuser:appuser ml/ /home/appuser/app/ml/
+COPY --chown=appuser:appuser ml/requirements.txt /home/appuser/app/requirements.txt
+COPY --chown=appuser:appuser ml/startup.sh /home/appuser/app/startup.sh
+RUN pip install --no-cache-dir -r /home/appuser/app/requirements.txt && \
+    dos2unix /home/appuser/app/startup.sh && chmod +x /home/appuser/app/startup.sh
+
+USER appuser
+WORKDIR /home/appuser/app/ml
+ENV DEVICE=cpu
+EXPOSE 8082
+CMD ["/home/appuser/app/startup.sh"]

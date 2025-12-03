@@ -1,0 +1,58 @@
+### Python ###
+.env
+.venv
+__pycache__
+ml/groq_keys.txt
+
+
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+**/bruno/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+**/.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+/.idea/
+.cursorrules/
+.cursorrules
+
+### Environment Variables ###
+# Ignore all .env files (containing sensitive data)
+**/.env
+.env
+*/.env
+# But keep .env.example files (safe templates)
+!**/.env.example
+!.env.example
+!*/.env.example

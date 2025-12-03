@@ -2,26 +2,23 @@ import { useState, useRef, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Viewer, Worker } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
 
 
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import '@react-pdf-viewer/toolbar/lib/styles/index.css';
+ 
 
-import { articlesAPI, marimoAPI } from "../utils/api";
+import { articlesAPI } from "../utils/api";
 import ToastNotification from "../components/ToastNotification";
 import CommentSectionArticle from "../components/CommentSectionArticle";
 import { useUser } from "../hooks/useUser";
-import MarimoCell from "../components/MarimoCell";
-import { MarimoSessionProvider } from "../contexts/MarimoSessionContext";
-import ResizablePanel from "../components/ResizablePanel";
+import ChatWindow from "../components/ChatWindow";
+ 
 
 export default function ArticlePage() {
   const { id } = useParams();
   const [article, setArticle] = useState(null);
   const [pdfFile, setPdfFile] = useState(null);
-  const [marimoComponents, setMarimoComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [file, setFile] = useState(null);
@@ -30,10 +27,11 @@ export default function ArticlePage() {
   const [isDragging, setIsDragging] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   const [showPdfFullscreen, setShowPdfFullscreen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMode, setChatMode] = useState('floating');
 
   
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
-  const toolbarPluginInstance = toolbarPlugin();
 
   const user = useUser();
 
@@ -49,63 +47,7 @@ export default function ArticlePage() {
         
         const articleData = await articlesAPI.getArticleById(id);
         setArticle(articleData);
-                
-        // Fetch Marimo components
-        try {
-          const marimoData = await marimoAPI.getComponentsByContent('article', id);
-          console.log("Fetched marimoData:", marimoData);
-          console.log("marimoData type:", typeof marimoData);
-          console.log("marimoData length:", marimoData ? marimoData.length : 0);
-          
-          if (marimoData && marimoData.length > 0) {
-            console.log("First component:", marimoData[0]);
-            console.log("First component code:", marimoData[0].code);
-            
-            // Fetch the actual code for each component
-            const componentsWithCode = await Promise.all(
-              marimoData.map(async (component) => {
-                try {
-                  let code = '';
-                  if (component.notebookPath) {
-                    try {
-                      const minioEndpoint = import.meta.env.VITE_MINIO_ENDPOINT || 'http://localhost:9000';
-                      const minioUrl = `${minioEndpoint}/marimo${component.notebookPath}`;
-                      console.log("Trying to fetch from MinIO:", minioUrl);
-                      
-                      const minioResponse = await fetch(minioUrl);
-                      if (minioResponse.ok) {
-                        code = await minioResponse.text();
-                        console.log("Successfully fetched code from MinIO:", code.substring(0, 100) + "...");
-                      } else {
-                        console.error("MinIO fetch failed:", minioResponse.status, minioResponse.statusText);
-                      }
-                    } catch (minioErr) {
-                      console.error("MinIO fetch error:", minioErr);
-                    }
-                  }
-                  
-                  return {
-                    ...component,
-                    code: code || `# Component: ${component.name}\n# No code available yet\n# Path: ${component.notebookPath || 'Unknown'}`
-                  };
-                } catch (err) {
-                  console.error(`Error fetching code for component ${component.id}:`, err);
-                  return {
-                    ...component,
-                    code: `# Component: ${component.name}\n# Error loading code: ${err.message}`
-                  };
-                }
-              })
-            );
-            
-            setMarimoComponents(componentsWithCode);
-          } else {
-            setMarimoComponents([]);
-          }
-        } catch (marimoErr) {
-          console.error("Error fetching Marimo components:", marimoErr);
-          setMarimoComponents([]);
-        }
+        
 
         const minioEndpoint = import.meta.env.VITE_MINIO_ENDPOINT || 'http://localhost:9000';
         
@@ -198,6 +140,14 @@ export default function ArticlePage() {
 
   return (
     <div className="dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+      {/* Chat Window */}
+      <ChatWindow
+        labId={id}
+        isOpen={isChatOpen}
+        onToggle={() => setIsChatOpen(!isChatOpen)}
+        chatMode={chatMode}
+        onSetChatMode={setChatMode}
+      />
       {toast.show && (
         <ToastNotification
           message={toast.message}
@@ -228,88 +178,63 @@ export default function ArticlePage() {
       {/* Main Content */}
       <div className="w-full max-w-none px-0 md:container md:mx-auto md:px-8 pb-8">
         <div style={{ height: '150vh' }}>
-          <ResizablePanel
-            leftComponent={
-              marimoComponents.length > 0 ? (
-                <aside className="h-full overflow-y-auto p-6 bg-gray-50 dark:bg-gray-800/50">
-                  <MarimoSessionProvider contentType="article" contentId={id}>
-                    <div className="sticky top-6 space-y-6">
-                      <div className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded px-3 py-2">
-                        <span className="font-medium">Shared session active</span> - variables persist between components. 
-                        Reload page to reset.
-                      </div>
-                      {marimoComponents.map(component => (
-                        <div key={component.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{component.name}</h3>
-                          <MarimoCell component={component} />
+          <main className="h-full p-6 overflow-hidden">
+            <div className="h-full">
+              {/* PDF Viewer Section */}
+              <div className="h-full">
+                <section className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg p-0 sm:p-4 md:p-8 w-full md:h-full flex flex-col">
+                  <h2 className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-6">
+                    Article PDF
+                  </h2>
+                  <div className="bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden w-full min-h-[100vw] md:flex-1 md:h-full relative">
+                    {pdfFile && (
+                      <>
+                        {/* Normal PDF preview for md+ screens */}
+                        <div className="hidden md:block w-full h-full min-h-[300px]">
+                          <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js">
+                            <Viewer fileUrl={pdfFile} plugins={[defaultLayoutPluginInstance]} />
+                          </Worker>
                         </div>
-                      ))}
-                    </div>
-                  </MarimoSessionProvider>
-                </aside>
-              ) : null
-            }
-            initialLeftWidth={25}
-            rightComponent={
-              <main className="h-full p-6 overflow-hidden">
-                <div className="h-full">
-                  {/* PDF Viewer Section */}
-                  <div className="h-full">
-                    <section className="bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg p-0 sm:p-4 md:p-8 w-full md:h-full flex flex-col">
-                      <h2 className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-6">
-                        Article PDF
-                      </h2>
-                      <div className="bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden w-full min-h-[100vw] md:flex-1 md:h-full relative">
-                        {pdfFile && (
-                          <>
-                            {/* Normal PDF preview for md+ screens */}
-                            <div className="hidden md:block w-full h-full min-h-[300px]">
-                              <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js">
-                                <Viewer fileUrl={pdfFile} plugins={[defaultLayoutPluginInstance]} />
-                              </Worker>
-                            </div>
-                            {/* Mobile preview with fullscreen button */}
-                            <div className="block md:hidden w-full h-full min-h-[100vw]">
-                              <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js">
-                                <Viewer fileUrl={pdfFile} plugins={[defaultLayoutPluginInstance]} />
-                              </Worker>
-                              <button
-                                className="absolute bottom-2 right-2 z-10 px-4 py-2 bg-msc text-white rounded-md shadow-md text-sm"
-                                onClick={() => setShowPdfFullscreen(true)}
-                              >
-                                View Fullscreen
-                              </button>
-                            </div>
-                            {/* Fullscreen overlay on mobile */}
-                            {showPdfFullscreen && (
-                              <div className="fixed inset-0 w-full h-full z-[9999] bg-white dark:bg-gray-900 flex flex-col">
-                                <button
-                                  className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                                  onClick={() => setShowPdfFullscreen(false)}
-                                  aria-label="Close fullscreen PDF"
-                                >
-                                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                                <div className="flex-1 flex items-center justify-center">
-                                  <div className="w-full h-full">
-                                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js">
-                                      <Viewer fileUrl={pdfFile} plugins={[defaultLayoutPluginInstance]} />
-                                    </Worker>
-                                  </div>
-                                </div>
+                        {/* Mobile preview with fullscreen button */}
+                        <div className="block md:hidden w-full h-full min-h-[100vw]">
+                          <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js">
+                            <Viewer fileUrl={pdfFile} plugins={[defaultLayoutPluginInstance]} />
+                          </Worker>
+                          <button
+                            className="absolute bottom-2 right-2 z-10 px-4 py-2 bg-msc text-white rounded-md shadow-md text-sm"
+                            onClick={() => setShowPdfFullscreen(true)}
+                          >
+                            View Fullscreen
+                          </button>
+                        </div>
+                        {/* Fullscreen overlay on mobile */}
+                        {showPdfFullscreen && (
+                          <div className="fixed inset-0 w-full h-full z-[9999] bg-white dark:bg-gray-900 flex flex-col">
+                            <button
+                              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                              onClick={() => setShowPdfFullscreen(false)}
+                              aria-label="Close fullscreen PDF"
+                            >
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                            <div className="flex-1 flex items-center justify-center">
+                              <div className="w-full h-full">
+                                <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.16.105/build/pdf.worker.min.js">
+                                  <Viewer fileUrl={pdfFile} plugins={[defaultLayoutPluginInstance]} />
+                                </Worker>
                               </div>
-                            )}
-                          </>
+                            </div>
+                          </div>
                         )}
-                      </div>
-                    </section>
+                      </>
+                    )}
                   </div>
-                </div>
-              </main>
-            }
-          />
+                </section>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
 

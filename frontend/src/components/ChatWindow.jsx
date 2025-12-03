@@ -123,8 +123,8 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
             </svg>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">AI Lab Assistant</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Ask questions about this lab</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">AI Article Assistant</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Ask questions about this article</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -213,7 +213,7 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask a question about this lab..."
+            placeholder="Ask a question about this article..."
             className="flex-1 resize-none px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-msc focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
             rows="2"
             disabled={isLoading}

@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 class HelperAgent(BaseAgent):
     def __init__(self, qdrant_repo: QdrantRepository):
-        self.model_name = "deepseek-r1-distill-llama-70b"
+        self.model_name = "qwen/qwen3-32b"
         self._key_manager = GroqKeyManager()
 
         self._qdrant_repo = qdrant_repo
@@ -64,6 +64,8 @@ class HelperAgent(BaseAgent):
         
 
     def _load_llm(self) -> None:
+        logger.info(f"Using {self.model_name} as LLM model")
+
         self._llm = ChatGroq(
             model=self.model_name,
             api_key=self._key_manager.get_key(),

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class AutoGradingAgent(BaseAgent):
     def __init__(self) -> None:
-        self.model_name = "deepseek-r1-distill-llama-70b"
+        self.model_name = "qwen/qwen3-32b"
         self._key_manager = GroqKeyManager()
 
         self._load_llm()

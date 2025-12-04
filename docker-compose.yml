@@ -7,9 +7,9 @@ volumes:
   postgres-feedback-data:
   postgres-labs-data:
   postgres-articles-data:
-  # postgres-ml-data:
+  postgres-ml-data:
   # postgres-marimo-data:
-  # ml-models:
+  ml-models:
   minio-data:
   mongodb-labs-data:
   mongodb-feedback-data:
@@ -248,53 +248,71 @@ services:
   #     - mongodb-feedback
   #     - minio
 
-  # ml-service:
-  #   image: ghcr.io/iu-capstone-project-2025/open-labs-share-ml-service:${IMAGE_TAG:-latest}
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile.ml-service
-  #   environment:
-  #     - SERVICE_PORT=8082
-  #     - DEVICE=cpu
-  #     - RAG_DB_PATH=/app/ml/faiss
-  #     - SCORE_THRESHOLD=1.0
-  #     - EMBEDDING_MODEL_NAME=BAAI/bge-small-en-v1.5
-  #     - LLM_MODEL_NAME=Qwen/Qwen2.5-Coder-1.5B-Instruct
-  #     - PDF_DIR=/app/ml/data/predator-pray-22/pdfs
-  #     - CODE_DIR=/app/ml/data/predator-pray-22/code
-  #     - POSTGRES_USER=ml_user
-  #     - POSTGRES_PASSWORD=${POSTGRES_ML_PASSWORD:-password}
-  #     - POSTGRES_HOST=postgres-ml
-  #     - POSTGRES_PORT=5432
-  #     - POSTGRES_DB=chat_history_db
-  #     - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
-  #     - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
-  #     - REDIS_BROKER_URL=${REDIS_BROKER_URL:-redis://ml-redis-broker:6379/0}
-  #     - QDRANT_HOST=${QDRANT_HOST:-ml-qdrant}
-  #     - QDRANT_PORT=${QDRANT_PORT:-6333}
-  #   expose:
-  #     - "8082"
-  #   volumes:
-  #     - ./ml:/app/ml
-  #     - ml-models:/app/models
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://127.0.0.1:8082/health"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 300s
-  #   depends_on:
-  #     postgres-ml:
-  #       condition: service_healthy
-  #     minio:
-  #       condition: service_started
-  #     ml-celery-worker:
-  #       condition: service_started
-  #     ml-qdrant:
-  #       condition: service_started
+  ml-service:
+    image: ghcr.io/iu-capstone-project-2025/open-labs-share-ml-service:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ml-service
+    environment:
+      - SERVICE_PORT=8082
+      - DEVICE=cpu
+      - RAG_DB_PATH=/app/ml/faiss
+      - SCORE_THRESHOLD=1.0
+      - EMBEDDING_MODEL_NAME=BAAI/bge-small-en-v1.5
+      - LLM_MODEL_NAME=Qwen/Qwen2.5-Coder-1.5B-Instruct
+      - PDF_DIR=/app/ml/data/predator-pray-22/pdfs
+      - CODE_DIR=/app/ml/data/predator-pray-22/code
+      - POSTGRES_USER=ml_user
+      - POSTGRES_PASSWORD=${POSTGRES_ML_PASSWORD:-password}
+      - POSTGRES_HOST=postgres-ml
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=chat_history_db
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+      - REDIS_BROKER_URL=${REDIS_BROKER_URL:-redis://ml-redis-broker:6379/0}
+      - QDRANT_HOST=${QDRANT_HOST:-ml-qdrant}
+      - QDRANT_PORT=${QDRANT_PORT:-6333}
+      - HTTP_PROXY=http://host.docker.internal:2080
+      - HTTPS_PROXY=http://host.docker.internal:2080
+      - http_proxy=http://host.docker.internal:2080
+      - https_proxy=http://host.docker.internal:2080
+      - ALL_PROXY=socks5://host.docker.internal:2080
+      - NO_PROXY=localhost,127.0.0.1,postgres-ml,minio,ml-redis-broker,ml-qdrant,haproxy,api-gateway,users-service,auth-service,articles-service,172.18.0.0/16
+      - no_proxy=localhost,127.0.0.1,postgres-ml,minio,ml-redis-broker,ml-qdrant,haproxy,api-gateway,users-service,auth-service,articles-service,172.18.0.0/16
+      - RUST_LOG=debug
+    dns:
+      - 127.0.0.11
+      - 8.8.8.8
+      - 1.1.1.1
+    dns_opt:
+      - "single-request-reopen"
+      - "timeout:2"
+      - "attempts:3"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    expose:
+      - "8082"
+    volumes:
+      - ./ml:/app/ml
+      - ml-models:/app/models
+    networks:
+      - app-network
+    # restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8082/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 300s
+    depends_on:
+      postgres-ml:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      ml-celery-worker:
+        condition: service_started
+      ml-qdrant:
+        condition: service_started
 
   # marimo-manager-service:
   #   build:
@@ -343,68 +361,68 @@ services:
   #     - app-network
   #   restart: unless-stopped
 
-  # postgres-ml:
-  #   image: postgres:15-alpine
-  #   environment:
-  #     - POSTGRES_DB=chat_history_db
-  #     - POSTGRES_USER=ml_user
-  #     - POSTGRES_PASSWORD=${POSTGRES_ML_PASSWORD:-password}
-  #   volumes:
-  #     - postgres-ml-data:/var/lib/postgresql/data
-  #   networks:
-  #     - app-network
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U ml_user -d chat_history_db"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 300s
+  postgres-ml:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=chat_history_db
+      - POSTGRES_USER=ml_user
+      - POSTGRES_PASSWORD=${POSTGRES_ML_PASSWORD}
+    volumes:
+      - postgres-ml-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ml_user -d chat_history_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 300s
 
-  # ml-redis-broker:
-  #   image: redis:7
-  #   ports:
-  #     - "6379:6379"
-  #   restart: unless-stopped
-  #   networks:
-  #     - app-network
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 5s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 300s
+  ml-redis-broker:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 300s
 
-  # ml-celery-worker:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile.ml-celery-worker
-  #   environment:
-  #     - REDIS_BROKER_URL=${REDIS_BROKER_URL:-redis://ml-redis-broker:6379/0}
-  #     - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
-  #     - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
-  #   volumes:
-  #     - ./ml:/app/ml
-  #   depends_on:
-  #     - ml-redis-broker
-  #     - minio
-  #   networks:
-  #     - app-network
-  #   healthcheck:
-  #     test: ["CMD", "celery", "-A", "celery_broker.worker.celery_app", "status"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 300s
+  ml-celery-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ml-celery-worker
+    environment:
+      - REDIS_BROKER_URL=${REDIS_BROKER_URL:-redis://ml-redis-broker:6379/0}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - ./ml:/app/ml
+    depends_on:
+      - ml-redis-broker
+      - minio
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "celery", "-A", "celery_broker.worker.celery_app", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 300s
 
-  # ml-qdrant:
-  #   image: qdrant/qdrant:latest
-  #   ports:
-  #     - "6333:6333"
-  #   volumes:
-  #     - qdrant-data:/qdrant/storage
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
+  ml-qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - app-network
+    restart: unless-stopped
 
   postgres-users:
     image: postgres:15

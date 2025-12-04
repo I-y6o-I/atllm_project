@@ -20,7 +20,7 @@ def query_llm(
 
     new_messages = messages + [
         HumanMessage(content=state.query),
-        AIMessage(content=format_model_response(response))
+        AIMessage(content=format_model_response(response.content))
     ]
     
     return {

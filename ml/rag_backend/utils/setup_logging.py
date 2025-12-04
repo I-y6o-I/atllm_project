@@ -17,3 +17,5 @@ def setup_logging():
         level=logging.INFO,
         handlers=[handler]
     )
+
+    # logging.getLogger("uvicorn.error").setLevel(logging.DEBUG)

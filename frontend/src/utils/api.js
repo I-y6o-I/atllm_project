@@ -5,7 +5,10 @@ export const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL ?
                      `${import.meta.env.VITE_API_GATEWAY_URL}/api/v1` :
                      'http://localhost:8080/api/v1';
                      
-const ML_BASE_URL = import.meta.env.VITE_ML_ENDPOINT || 'http://localhost:8081';
+// const ML_BASE_URL = import.meta.env.VITE_ML_ENDPOINT || 'http://localhost:8082';
+const ML_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL ? 
+                     `${import.meta.env.VITE_API_GATEWAY_URL}/api/v1/ml` :
+                     '/api/v1/ml';
 
 
 /**

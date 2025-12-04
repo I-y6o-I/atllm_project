@@ -27,7 +27,7 @@ async def startup_events(app: FastAPI):
     logger.info("Redis successfully loaded")
     yield
 
-app = FastAPI(docs_url="/", lifespan=startup_events)
+app = FastAPI(docs_url="/api/v1/ml", lifespan=startup_events)
 
 origins = ["*"]
 
@@ -39,4 +39,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(router, prefix="/api/v1/ml")

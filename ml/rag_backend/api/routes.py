@@ -17,9 +17,11 @@ from rag_backend.dependencies import(
 from rag_backend.services.auto_grading_service import AutoGradingService
 from celery_broker.tasks.grade import grade_submission_task
 from rag_backend.repositories import QdrantRepository
+import logging
+import traceback
 
 router = APIRouter(tags=["Model"])
-
+logger = logging.getLogger(__name__)
 
 @router.get("/health")
 async def health_check():
@@ -34,6 +36,8 @@ async def ask(
     try:
         return await ask_service.ask(request)
     except Exception as e:
+        logger.error(f"Ask error: {e}")
+        print(f"[TRACEBACK]\n{traceback.format_exc()}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
     
 

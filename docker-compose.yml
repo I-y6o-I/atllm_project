@@ -43,18 +43,19 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: ghcr.io/iu-capstone-project-2025/open-labs-share-frontend:${IMAGE_TAG:-latest}
+    # image: ghcr.io/iu-capstone-project-2025/open-labs-share-frontend:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.frontend
       args:
-        - VITE_API_GATEWAY_URL=http://158.160.161.151
+        - VITE_API_GATEWAY_URL=http://localhost
     environment:
       - NODE_ENV=production
       - VITE_API_GATEWAY_ENDPOINT=/api/v1
       - VITE_AUTH_API_ENDPOINT=/api/v1/auth
       - AUTH_SERVICE_HOST_NGINX=auth-service
       - API_GATEWAY_HOST_NGINX=api-gateway
+      - VITE_ML_ENDPOINT=http://localhost:8082
     # ports:
     #   - "80:80"
     expose:
@@ -72,7 +73,7 @@ services:
       start_period: 300s
 
   api-gateway:
-    image: ghcr.io/iu-capstone-project-2025/open-labs-share-api-gateway:${IMAGE_TAG:-latest}
+    # image: ghcr.io/iu-capstone-project-2025/open-labs-share-api-gateway:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.api-gateway
@@ -104,7 +105,7 @@ services:
       start_period: 300s
 
   auth-service:
-    image: ghcr.io/iu-capstone-project-2025/open-labs-share-auth-service:${IMAGE_TAG:-latest}
+    # image: ghcr.io/iu-capstone-project-2025/open-labs-share-auth-service:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.auth-service
@@ -128,7 +129,7 @@ services:
       start_period: 300s
 
   users-service:
-    image: ghcr.io/iu-capstone-project-2025/open-labs-share-users-service:${IMAGE_TAG:-latest}
+    # image: ghcr.io/iu-capstone-project-2025/open-labs-share-users-service:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.users-service
@@ -186,7 +187,7 @@ services:
   #     - minio
 
   articles-service:
-    image: ghcr.io/iu-capstone-project-2025/open-labs-share-articles-service:${IMAGE_TAG:-latest}
+    # image: ghcr.io/iu-capstone-project-2025/open-labs-share-articles-service:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.articles-service
@@ -249,7 +250,7 @@ services:
   #     - minio
 
   ml-service:
-    image: ghcr.io/iu-capstone-project-2025/open-labs-share-ml-service:${IMAGE_TAG:-latest}
+    # image: ghcr.io/iu-capstone-project-2025/open-labs-share-ml-service:${IMAGE_TAG:-latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.ml-service
@@ -272,24 +273,6 @@ services:
       - REDIS_BROKER_URL=${REDIS_BROKER_URL:-redis://ml-redis-broker:6379/0}
       - QDRANT_HOST=${QDRANT_HOST:-ml-qdrant}
       - QDRANT_PORT=${QDRANT_PORT:-6333}
-      - HTTP_PROXY=http://host.docker.internal:2080
-      - HTTPS_PROXY=http://host.docker.internal:2080
-      - http_proxy=http://host.docker.internal:2080
-      - https_proxy=http://host.docker.internal:2080
-      - ALL_PROXY=socks5://host.docker.internal:2080
-      - NO_PROXY=localhost,127.0.0.1,postgres-ml,minio,ml-redis-broker,ml-qdrant,haproxy,api-gateway,users-service,auth-service,articles-service,172.18.0.0/16
-      - no_proxy=localhost,127.0.0.1,postgres-ml,minio,ml-redis-broker,ml-qdrant,haproxy,api-gateway,users-service,auth-service,articles-service,172.18.0.0/16
-      - RUST_LOG=debug
-    dns:
-      - 127.0.0.11
-      - 8.8.8.8
-      - 1.1.1.1
-    dns_opt:
-      - "single-request-reopen"
-      - "timeout:2"
-      - "attempts:3"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     expose:
       - "8082"
     volumes:

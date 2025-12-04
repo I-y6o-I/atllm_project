@@ -3,6 +3,7 @@
 .venv
 __pycache__
 ml/groq_keys.txt
+test.ipynb
 
 
 HELP.md

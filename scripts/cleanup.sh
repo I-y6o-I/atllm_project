@@ -10,6 +10,6 @@ fi
 
 echo "Stopping and removing all containers and networks..."
 # This will stop and remove containers for all profiles
-docker-compose down $REMOVE_VOLUMES
+docker compose down $REMOVE_VOLUMES
 
 echo "Cleanup complete."

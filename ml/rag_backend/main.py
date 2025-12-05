@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from agents.helper_agent.agent import HelperAgent
 from agents.summarizer_agent import SummarizerAgent
-from agents.auto_grading_agent.agent import AutoGradingAgent
 from rag_backend.utils import check_postgres, setup_logging
 from rag_backend.api.routes import router
 from rag_backend.repositories import RedisRepository, MinioRepository, QdrantRepository, RaptorRepository
@@ -30,9 +29,6 @@ async def startup_events(app: FastAPI):
         raptor_repo=app.state.raptor_repository
     )
     logger.info("RAG Agent successfully loaded")
-
-    app.state.auto_grading_agent = AutoGradingAgent()
-    logger.info("Auto Grading Agent successfully loaded")
 
     app.state.redis_repository = RedisRepository(db=1)
     logger.info("Redis successfully loaded")

@@ -4,15 +4,10 @@ networks:
 
 volumes:
   postgres-users-data:
-  postgres-feedback-data:
-  postgres-labs-data:
   postgres-articles-data:
   postgres-ml-data:
-  # postgres-marimo-data:
   ml-models:
   minio-data:
-  mongodb-labs-data:
-  mongodb-feedback-data:
   qdrant-data:
 
 services:
@@ -151,41 +146,6 @@ services:
     depends_on:
       - postgres-users
 
-  # labs-service:
-  #   image: ghcr.io/iu-capstone-project-2025/open-labs-share-labs-service:${IMAGE_TAG:-latest}
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile.labs-service
-  #   environment:
-  #     - SERVICE_HOST=0.0.0.0
-  #     - SERVICE_PORT=9091
-  #     - POSTGRESQL_HOST=postgres-labs
-  #     - POSTGRESQL_PORT=5432
-  #     - POSTGRESQL_USER=labs_user
-  #     - POSTGRESQL_PASSWORD=${POSTGRES_LABS_PASSWORD:-postgres}
-  #     - POSTGRESQL_NAME=labs_db
-  #     - MINIO_ENDPOINT=minio:9000
-  #     - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
-  #     - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
-  #     - MONGODB_HOST=mongodb-labs
-  #     - MONGODB_PORT=27017
-  #     - MONGODB_USER=${MONGO_ROOT_USER:-mongo}
-  #     - MONGODB_PASSWORD=${MONGO_ROOT_PASSWORD:-mongo}
-  #     - MONGODB_NAME=labs_mongo_db
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "grpc_health_probe", "-addr=127.0.0.1:9091"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 300s
-  #   depends_on:
-  #     - postgres-labs
-  #     - mongodb-labs
-  #     - minio
-
   articles-service:
     # image: ghcr.io/iu-capstone-project-2025/open-labs-share-articles-service:${IMAGE_TAG:-latest}
     build:
@@ -214,40 +174,6 @@ services:
     depends_on:
       - postgres-articles
       - minio
-
-  # feedback-service:
-  #   image: ghcr.io/iu-capstone-project-2025/open-labs-share-feedback-service:${IMAGE_TAG:-latest}
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile.feedback-service
-  #   environment:
-  #     - GRPC_PORT=9090
-  #     - POSTGRES_HOST=postgres-feedback
-  #     - POSTGRES_PORT=5432
-  #     - POSTGRES_USER=feedback_user
-  #     - POSTGRES_PASSWORD=${POSTGRES_FEEDBACK_PASSWORD:-feedback_password}
-  #     - POSTGRES_DB=feedback_db
-  #     - MINIO_ENDPOINT=minio:9000
-  #     - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
-  #     - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
-  #     - MINIO_BUCKET_NAME=feedback
-  #     - MINIO_USE_SSL=false
-  #     - MONGODB_URI=mongodb://${MONGO_ROOT_USER:-adminadmin}:${MONGO_ROOT_PASSWORD:-adminadmin}@mongodb-feedback:27017
-  #     - MONGODB_DATABASE=feedback
-  #     - MONGODB_COLLECTION=comments
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test: ["CMD", "grpc_health_probe", "-addr=127.0.0.1:9090"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 300s
-  #   depends_on:
-  #     - postgres-feedback
-  #     - mongodb-feedback
-  #     - minio
 
   ml-service:
     # image: ghcr.io/iu-capstone-project-2025/open-labs-share-ml-service:${IMAGE_TAG:-latest}
@@ -292,57 +218,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
-      ml-celery-worker:
-        condition: service_started
       ml-qdrant:
         condition: service_started
-
-  # marimo-manager-service:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile.marimo-manager-service
-  #   ports:
-  #     - "8084:8084"
-  #   environment:
-  #     - SERVER_PORT=8084
-  #     - DB_URL=jdbc:postgresql://postgres-marimo:5432/marimo_service
-  #     - DB_USERNAME=${POSTGRES_MARIMO_USER:-marimo_user}
-  #     - DB_PASSWORD=${POSTGRES_MARIMO_PASSWORD:-password}
-  #     - PYTHON_SERVICE_HOST=marimo-executor-service
-  #     - PYTHON_SERVICE_PORT=9095
-  #     - AUTH_SERVICE_HOST=auth-service
-  #     - AUTH_SERVICE_PORT=9092
-  #     - USERS_SERVICE_HOST=users-service
-  #     - USERS_SERVICE_PORT=9093
-  #     - ARTICLES_SERVICE_HOST=articles-service
-  #     - ARTICLES_SERVICE_PORT=50051
-  #     - LABS_SERVICE_HOST=labs-service
-  #     - LABS_SERVICE_PORT=9091
-  #     - MINIO_ENDPOINT=http://minio:9000
-  #     - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
-  #     - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
-  #     - MINIO_BUCKET=marimo
-  #     - SPRING_PROFILES_ACTIVE=docker
-  #   depends_on:
-  #     - postgres-marimo
-  #     - marimo-executor-service
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
-
-  # marimo-executor-service:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Dockerfile.marimo-executor-service
-  #   environment:
-  #     - GRPC_PORT=9095
-  #     - MINIO_ENDPOINT=minio:9000
-  #     - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-minioadmin}
-  #     - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
-  #     - MINIO_BUCKET=marimo
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped
 
   postgres-ml:
     image: postgres:15-alpine
@@ -375,28 +252,6 @@ services:
       retries: 5
       start_period: 300s
 
-  ml-celery-worker:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.ml-celery-worker
-    environment:
-      - REDIS_BROKER_URL=${REDIS_BROKER_URL:-redis://ml-redis-broker:6379/0}
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
-    volumes:
-      - ./ml:/app/ml
-    depends_on:
-      - ml-redis-broker
-      - minio
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "celery", "-A", "celery_broker.worker.celery_app", "status"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 300s
-
   ml-qdrant:
     image: qdrant/qdrant:latest
     ports:
@@ -420,42 +275,6 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U users_user -d users_service"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 300s
-
-  postgres-feedback:
-    image: postgres:15
-    environment:
-      - POSTGRES_DB=feedback_db
-      - POSTGRES_USER=feedback_user
-      - POSTGRES_PASSWORD=${POSTGRES_FEEDBACK_PASSWORD:-feedback_password}
-    volumes:
-      - postgres-feedback-data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U feedback_user -d feedback_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 300s
-
-  postgres-labs:
-    image: postgres:15
-    environment:
-      - POSTGRES_DB=labs_db
-      - POSTGRES_USER=labs_user
-      - POSTGRES_PASSWORD=${POSTGRES_LABS_PASSWORD:-postgres}
-    volumes:
-      - postgres-labs-data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U labs_user -d labs_db"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -500,50 +319,3 @@ services:
       retries: 5
       start_period: 300s
 
-  mongodb-labs:
-    image: mongo:latest
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-adminadmin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-adminadmin}
-      - MONGO_INITDB_DATABASE=labs_mongo_db
-    volumes:
-      - mongodb-labs-data:/data/db
-    networks:
-      - app-network
-    restart: unless-stopped
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok" | mongosh --quiet'
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 300s
-
-  mongodb-feedback:
-    image: mongo:latest
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-adminadmin}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-adminadmin}
-      - MONGO_INITDB_DATABASE=feedback
-    volumes:
-      - mongodb-feedback-data:/data/db
-    networks:
-      - app-network
-    restart: unless-stopped
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok" | mongosh --quiet'
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 300s
-
-  # postgres-marimo:
-  #   image: postgres:15-alpine
-  #   environment:
-  #     - POSTGRES_DB=marimo_service
-  #     - POSTGRES_USER=${POSTGRES_MARIMO_USER:-marimo_user}
-  #     - POSTGRES_PASSWORD=${POSTGRES_MARIMO_PASSWORD:-password}
-  #   volumes:
-  #     - postgres-marimo-data:/var/lib/postgresql/data
-  #   networks:
-  #     - app-network
-  #   restart: unless-stopped

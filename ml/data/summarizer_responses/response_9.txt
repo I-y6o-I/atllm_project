@@ -1,0 +1,5 @@
+stacked RNN layers are also notable [Zhang et al., 2016b; Longpre et al., 2016; Nie and Bansal, 2017;
+Ding et al., 2018].
+Notably, a recent emerging trend is to model sequences without recurrence. This is primarily
+motivated by the fact that recurrence is an inherent prohibitor of parallelism. To this end, many
+works have explored the possibility of using attention as a replacement for recurrence. In particular,

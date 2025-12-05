@@ -73,6 +73,7 @@ langgraph-checkpoint-postgres==2.0.21
 langgraph-prebuilt==0.2.2
 langgraph-sdk==0.1.70
 langsmith==0.4.2
+hdbscan
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 marshmallow==3.26.1

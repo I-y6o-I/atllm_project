@@ -124,6 +124,28 @@ async def index_assignment(
 
 
 from typing import Optional, List, Dict, Any
+
+@router.post("/build_tree")
+async def build_tree(
+    max_levels: int = 3,
+    min_nodes_per_level: int = 3,
+    raptor_repo: RaptorRepository = Depends(get_raptor_repository),
+) -> Dict[str, Any]:
+    try:
+        result = raptor_repo.build_full_tree(
+            max_levels=max_levels,
+            min_nodes_per_level=min_nodes_per_level
+        )
+
+        print("[BUILD TREE RESULT]", raptor_repo.get_tree_stats(), flush=True)
+        return result
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Build tree error: {e}")
+        print(f"[TRACEBACK]\n{traceback.format_exc()}", flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.get("/raptor_search")
 async def raptor_search(
     query: str,
@@ -132,15 +154,16 @@ async def raptor_search(
     mode: str = "collapsed",  # "collapsed" or "level"
     limit: int = 10,
     score_threshold: float = 0.0,
+    level_boost: float = 0.05,
     raptor_repo: RaptorRepository = Depends(get_raptor_repository)
 ) -> List[Dict[str, Any]]:
     try:
         if mode == "collapsed":
-            results = raptor_repo.search_collapsed_tree(
+            results = raptor_repo.search_top_down(
                 query=query,
-                paper_id=paper_id,
-                limit=limit,
-                score_threshold=score_threshold
+                top_k_level2=1,   # default: 1
+                top_k_level1=5,   # default: 5
+                top_k_level0=20   # default: 20
             )
             return results
         elif mode == "level":

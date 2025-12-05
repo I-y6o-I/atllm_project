@@ -1,0 +1,5 @@
+in conjunction by allowing one RNN to control another RNN. As such, our key aim in this work is to
+show that our proposed controller-listener architecture is a viable replacement for the widely adopted
+stacked recurrent architecture.
+To demonstrate the effectiveness of our proposed RCRN model, we conduct extensive experiments on
+a plethora of diverse NLP tasks where sequence encoders such as LSTMs/GRUs are highly essential.

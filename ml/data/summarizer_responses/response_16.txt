@@ -1,0 +1,5 @@
+For the neural language model, we used a
+four-layer QRNN (Bradbury et al., 2017), which
+achieves state-of-the-art results on a variety of
+datasets, such as WT103 (Merity et al., 2018a)
+and PTB. To compare against more common

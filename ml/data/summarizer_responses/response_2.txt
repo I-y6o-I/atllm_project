@@ -1,0 +1,6 @@
+lengths.
+5 Conclusion and Future Directions
+We proposed Recurrently Controlled Recurrent Networks (RCRN), a new recurrent architecture
+and encoder for a myriad of NLP tasks. RCRN operates in a novel controller-listener architecture
+which uses RNNs to learn the gating functions of another RNN. We apply RCRN to a potpourri
+of NLP tasks and achieve promising/highly competitive results on all tasks and 26 benchmark

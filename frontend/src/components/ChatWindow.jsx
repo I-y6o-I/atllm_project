@@ -4,7 +4,7 @@ import { getCurrentUser } from '../utils/auth';
 import { useUser } from '../hooks/useUser';
 import { mlAPI } from '../utils/api';
 
-const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
+const ChatWindow = ({ labId = null, isOpen, onToggle, chatMode, onSetChatMode }) => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -12,25 +12,30 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
+  // Determine if we're in global chat mode (no specific labId)
+  const isGlobalChat = !labId;
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && user && labId) {
+    if (isOpen && user) {
       loadChatHistory();
     }
-  }, [isOpen, user, labId]);
+  }, [isOpen, user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const loadChatHistory = async () => {
-    if (!user || !labId) return;
+    if (!user) return;
 
     try {
-      const data = await mlAPI.getChatHistory(String(user.id), String(labId));
+      // For global chat, pass null or empty string as assignment_id
+      const assignmentId = labId || '';
+      const data = await mlAPI.getChatHistory(String(user.id), assignmentId);
       if (data.history && Array.isArray(data.history)) {
         const formattedMessages = data.history
           .filter(msg => msg.type !== 'system')
@@ -48,7 +53,7 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
   };
 
   const sendMessage = async () => {
-    if (!inputValue.trim() || !user || !labId || isLoading) return;
+    if (!inputValue.trim() || !user || isLoading) return;
 
     const userMessage = {
       id: Date.now(),
@@ -63,7 +68,9 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
     setIsLoading(true);
 
     try {
-      const data = await mlAPI.askAgent(String(user.id), String(labId), String(messageContent)  );
+      // For global chat, pass empty string as assignment_id
+      const assignmentId = labId || '';
+      const data = await mlAPI.askAgent(String(user.id), assignmentId, String(messageContent));
       const aiMessage = {
         id: Date.now() + 1,
         text: data.content,
@@ -123,8 +130,12 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
             </svg>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">AI Article Assistant</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Ask questions about this article</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {isGlobalChat ? 'AI Articles Assistant' : 'AI Article Assistant'}
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {isGlobalChat ? 'Ask questions about any article' : 'Ask questions about this article'}
+            </p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -170,7 +181,7 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
               className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
+                className={`max-w-[85%] px-3 py-2 rounded-lg ${
                   message.isUser
                     ? 'bg-msc text-white'
                     : message.isError
@@ -178,10 +189,10 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
                     : 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
                 }`}
               >
-                <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="prose prose-xs dark:prose-invert max-w-none text-xs break-words">
                   <ReactMarkdown>{message.text}</ReactMarkdown>
                 </div>
-                <p className={`text-xs mt-1 ${
+                <p className={`text-[10px] mt-1 ${
                   message.isUser ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'
                 }`}>
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -213,8 +224,8 @@ const ChatWindow = ({ labId, isOpen, onToggle, chatMode, onSetChatMode }) => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask a question about this article..."
-            className="flex-1 resize-none px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-msc focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
+            placeholder={isGlobalChat ? "Ask a question about any article..." : "Ask a question about this article..."}
+            className="flex-1 resize-none px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-msc focus:border-transparent dark:bg-gray-700 dark:text-white text-xs"
             rows="2"
             disabled={isLoading}
           />

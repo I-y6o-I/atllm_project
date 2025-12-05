@@ -1,0 +1,10 @@
+works for natural language processing.
+AWD-LSTM. Merity et al. (2018b) show that a
+simple three-layer LSTM, with proper regulariza-
+tion and optimization techniques, can achieve state
+of the art on various language modeling datasets,
+surpassing more complex models. Speciﬁcally,
+Merity et al. (2018b) apply randomized backprop-
+agation through time, variational dropout, activa-
+tion regularization, embedding dropout, and tem-
+poral activation regularization. A novel sched-

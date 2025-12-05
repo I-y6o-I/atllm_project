@@ -11,7 +11,7 @@ DEFAULT_API_URL = os.environ.get("API_URL", "http://localhost/api/v1")
 DEFAULT_TIMEOUT = 60  # seconds
 DEFAULT_MAPPING_FILE = "/home/kirill/Files/IU_Cources/atllm_project/ml/data/id_mapping.json"
 
-# python ml/utils/upload_documents.py -d ml/data/qasper_pdfs -m ml/data/id_mapping.json -t eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwidG9rZW5JZCI6ImU4MzhiNjg1LTc0ZTEtNDdhZS1hNzgzLTZmZGVhNmU5ZjUyZSIsImlkIjoxLCJlbWFpbCI6ImRlbW91c2VyIiwic3ViIjoiZGVtb3VzZXIiLCJpYXQiOjE3NjQ5NDcwNDQsImV4cCI6MTc2NTA5MTA0NH0.coP3Tjft3O1cYjSnF-qlrKNKYUyaUYloSEKpLaWp2xQ
+# python ml/utils/upload_documents.py -d ml/data/qasper_pdfs -m ml/data/id_mapping.json -t eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwidG9rZW5JZCI6IjViYThmYmE2LWMzY2ItNDdjMS04MjM5LTBiOTlmMWNkNmIwZCIsImlkIjoxLCJlbWFpbCI6ImRlbW91c2VyIiwic3ViIjoiZGVtb3VzZXIiLCJpYXQiOjE3NjQ5NjU5MTgsImV4cCI6MTc2NTEwOTkxOH0.USDtsXhmCj7_gkrZ3k45IGOsfBQBDeROa7FLls5akNI
 
 def load_qasper_dataset() -> dict:
     """
@@ -307,7 +307,7 @@ def batch_upload(
         if delay > 0 and i < len(pdfs):
             time.sleep(delay)
 
-        break
+        # break
     
     print("\n" + "-" * 60)
     print(f"Upload complete: {results['success']}/{results['total']} successful, {results['failed']} failed")

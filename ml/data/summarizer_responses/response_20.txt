@@ -1,0 +1,7 @@
+question classiﬁcation (TREC), entailment classiﬁcation (SNLI, SciTail), answer
+selection (WikiQA, TrecQA) and reading comprehension (NarrativeQA). Across all
+26 datasets, our results demonstrate that RCRN not only consistently outperforms
+BiLSTMs but also stacked BiLSTMs, suggesting that our controller architecture
+might be a suitable replacement for the widely adopted stacked architecture.
+1 Introduction
+Recurrent neural networks (RNNs) live at the heart of many sequence modeling problems. In

@@ -1,0 +1,6 @@
+(RCRN) for expressive and powerful sequence encoding. More concretely, the key
+idea behind our approach is to learn the recurrent gating functions using recurrent
+networks. Our architecture is split into two components - a controller cell and a
+listener cell whereby the recurrent controller actively inﬂuences the compositional-
+ity of the listener cell. We conduct extensive experiments on a myriad of tasks in
+the NLP domain such as sentiment analysis (SST, IMDb, Amazon reviews, etc.),

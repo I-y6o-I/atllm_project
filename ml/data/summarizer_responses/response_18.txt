@@ -1,0 +1,5 @@
+particular, the incorporation of gated additive recurrent connections is extremely powerful, leading to
+the pervasive adoption of models such as Gated Recurrent Units (GRU) [Cho et al., 2014] or Long
+Short-Term Memory (LSTM) [Hochreiter and Schmidhuber, 1997] across many NLP applications
+[Bahdanau et al., 2014; Xiong et al., 2016; Rocktäschel et al., 2015; McCann et al., 2017]. In these
+models, the key idea is that the gating functions control information ﬂow and compositionality over

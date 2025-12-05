@@ -1,6 +1,4 @@
 import asyncio
-from langchain_qdrant import QdrantVectorStore
-from qdrant_client import QdrantClient
 from agents.base import BaseAgent
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import StateSnapshot
@@ -17,10 +15,9 @@ from agents.helper_agent.config import \
     EMBEDDING_MODEL_NAME, \
     LLM_MODEL_NAME, \
     SCORE_THRESHOLD
-from rag_backend.repositories import QdrantRepository
+from rag_backend.repositories import RaptorRepository
 from rag_backend.config import POSTGRES_URL
 import logging
-import os
 import os
 from agents.schemas import AgentState
 import traceback
@@ -29,40 +26,16 @@ import traceback
 logger = logging.getLogger(__name__)
 
 class HelperAgent(BaseAgent):
-    def __init__(self, qdrant_repo: QdrantRepository):
+    def __init__(self, raptor_repo: RaptorRepository):
         self.model_name = "qwen/qwen3-32b"
         self._key_manager = GroqKeyManager()
 
-        self._qdrant_repo = qdrant_repo
+        self._raptor_repo = raptor_repo
 
-        self._load_vector_storage()
         self._load_llm()
         self._load_graph_builder()
-
-    def _load_vector_storage(self) -> None:
-        try:
-            self._qdrant_client = self._qdrant_repo.qdrant_client
-            self._db = QdrantVectorStore(
-                client=self._qdrant_client,
-                collection_name=self._qdrant_repo.collection_name,
-                embedding=self._qdrant_repo.embedding_model,
-                # metadata_payload_key="payload",
-                content_payload_key="text"
-            )
-            self._retriever = self._db.as_retriever(
-                search_type="similarity",
-                k=3,
-                search_kwargs={
-                    "score_threshold": 0.0,
-                }
-            )
-
-            logger.info(f"SCORE THRESHOLD {str(SCORE_THRESHOLD)}")
-
-            logger.info("Vector storage loaded successfully")
-        except Exception as e:
-            logger.error(f"Vector storage load failed: {e}")
-            raise RuntimeError("Vector storage load failed") from e 
+        
+        logger.info("HelperAgent initialized with RaptorRepository") 
 
     def _load_llm(self) -> None:
         logger.info(f"Using {self.model_name} as LLM model")
@@ -89,7 +62,7 @@ class HelperAgent(BaseAgent):
                 "retrieve",
                 partial(
                     retrieve,
-                    retriever=self._retriever
+                    raptor_repo=self._raptor_repo
                 )
             )
             self._graph_builder.add_node(

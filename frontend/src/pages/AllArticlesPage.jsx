@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ArticleCard from "../components/ArticleCard";
+import ChatWindow from "../components/ChatWindow";
 
 import { articlesAPI } from "../utils/api";
 
@@ -8,6 +9,8 @@ export default function AllArticlesPage() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMode, setChatMode] = useState('floating');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -107,6 +110,14 @@ export default function AllArticlesPage() {
           </div>
         )}
       </div>
+      
+      {/* Global Chat Window */}
+      <ChatWindow
+        isOpen={isChatOpen}
+        onToggle={() => setIsChatOpen(!isChatOpen)}
+        chatMode={chatMode}
+        onSetChatMode={setChatMode}
+      />
     </div>
   );
 } 

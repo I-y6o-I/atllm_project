@@ -1,0 +1,12 @@
+[Page 1]
+Recurrently Controlled Recurrent Networks
+Yi Tay1, Luu Anh Tuan2, and Siu Cheung Hui3
+1;3Nanyang Technological University
+2Institute for Infocomm Research
+ytay017@e.ntu.edu.sg1
+at.luu@i2r.a-star.edu.sg2
+asschui@ntu.edu.sg3
+Abstract
+Recurrent neural networks (RNNs) such as long short-term memory and gated
+recurrent units are pivotal building blocks across a broad spectrum of sequence
+modeling problems. This paper proposes a recurrently controlled recurrent network

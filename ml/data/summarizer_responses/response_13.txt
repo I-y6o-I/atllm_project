@@ -1,0 +1,5 @@
+from multi-scale models [Koutnik et al., 2014; Chung et al., 2016; Chang et al., 2017] to tree-
+structured encoders [Tai et al., 2015; Choi et al., 2017]. Models that are targetted at improving the
+internals of the RNN cell have also been proposed [Xingjian et al., 2015; Danihelka et al., 2016].
+Given the importance of sequence encoding in NLP, the design of effective RNN units for this purpose
+remains an active area of research.

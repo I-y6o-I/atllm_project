@@ -1,0 +1,10 @@
+To demonstrate the effectiveness of the QRNN
+models, we present the results of past and cur-
+rent state-of-the-art neural language models in Ta-
+ble 1; we report the Skip- and AWD-LSTM re-
+sults as seen in the original papers, while we re-
+port our QRNN results. Skip LSTM denotes the
+four-layer Skip LSTM in Melis et al. (2018). Rae
+et al. (2018) focus on Hebbian softmax, a model
+extension technique—Rae-LSTM refers to their
+base LSTM model without any extensions. In our

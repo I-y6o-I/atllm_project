@@ -21,7 +21,7 @@ class AskService:
         try:
             config: RunnableConfig = {
                 "configurable": {
-                    "thread_id": f"{request.assignment_id}_{request.uuid}"
+                    "thread_id": request.uuid  # Single thread for all papers per user
                 }
             }
 

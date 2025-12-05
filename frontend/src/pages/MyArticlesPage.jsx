@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ArticleCard from "../components/ArticleCard";
+import ChatWindow from "../components/ChatWindow";
 import { articlesAPI, marimoAPI } from "../utils/api";
 import { getCurrentUser, isAuthenticated } from "../utils/auth";
 import { TrashIcon } from '@heroicons/react/24/outline';
@@ -12,6 +13,8 @@ export default function MyArticlesPage() {
   const [user, setUser] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMode, setChatMode] = useState('floating');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -254,6 +257,14 @@ export default function MyArticlesPage() {
         )}
       </div>
       <ConfirmationModal />
+      
+      {/* Global Chat Window */}
+      <ChatWindow
+        isOpen={isChatOpen}
+        onToggle={() => setIsChatOpen(!isChatOpen)}
+        chatMode={chatMode}
+        onSetChatMode={setChatMode}
+      />
     </div>
   );
 }

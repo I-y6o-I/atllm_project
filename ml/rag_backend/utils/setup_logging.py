@@ -18,4 +18,5 @@ def setup_logging():
         handlers=[handler]
     )
 
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     # logging.getLogger("uvicorn.error").setLevel(logging.DEBUG)

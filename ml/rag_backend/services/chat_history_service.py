@@ -32,7 +32,7 @@ class ChatHistoryService:
     async def get_chat_history(self, request: ChatHistoryRequest) -> tp.Optional[ChatHistory]:
         config: RunnableConfig = {
             "configurable": {
-                "thread_id": f"{request.assignment_id}_{request.uuid}"
+                "thread_id": request.uuid  # Single thread for all papers per user
             }
         }
 

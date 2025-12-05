@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { articlesAPI, marimoAPI } from '../utils/api';
+import { articlesAPI, marimoAPI, mlAPI } from '../utils/api';
 import { getCurrentUser } from '../utils/auth';
 import MarimoCreator from './MarimoCreator';
 import { PlusCircleIcon } from '@heroicons/react/24/solid';
@@ -136,6 +136,19 @@ export default function ArticleUpload({ onSuccess, onCancel, isModal = true }) {
         }
       } else {
         console.log("Condition FAILED. Skipping Marimo component creation.");
+      }
+
+      // Trigger ML service to index the uploaded paper (non-blocking with error handling)
+      try {
+        console.log("Triggering ML indexing for article:", result.id);
+        if (result && result.id) {
+          // fire-and-forget indexing; we catch errors so this doesn't block the UI
+          mlAPI.indexAssignment(result.id).catch(err => {
+            console.error('ML indexing failed for article:', result.id, err);
+          });
+        }
+      } catch (mlErr) {
+        console.error('Error while calling ML indexAssignment:', mlErr);
       }
 
       if (onSuccess) {

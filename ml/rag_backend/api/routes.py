@@ -12,11 +12,12 @@ from rag_backend.dependencies import(
     get_ask_service,
     get_chat_history_service,
     get_tasks_service,
-    get_qdrant_repository
+    get_qdrant_repository,
+    get_raptor_repository
 )
 from rag_backend.services.auto_grading_service import AutoGradingService
 from celery_broker.tasks.grade import grade_submission_task
-from rag_backend.repositories import QdrantRepository
+from rag_backend.repositories import QdrantRepository, RaptorRepository
 import logging
 import traceback
 
@@ -111,10 +112,53 @@ async def get_auto_grade_status(
 @router.post("/index_assignment")
 async def index_assignment(
     assignment_id: str = Form(...),
-    qdrant_repo: QdrantRepository = Depends(get_qdrant_repository)
+    raptor_repo: RaptorRepository = Depends(get_raptor_repository)
 ):
     try:
-        qdrant_repo.index_assignment(assignment_id)
+        raptor_repo.index_paper_level0_from_minio(assignment_id)
         return Response(status_code=204)
     except Exception as e:
+        logger.error(f"Index assignment error: {e}")
+        print(f"[TRACEBACK]\n{traceback.format_exc()}", flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+from typing import Optional, List, Dict, Any
+@router.get("/raptor_search")
+async def raptor_search(
+    query: str,
+    paper_id: Optional[str] = None,
+    level: Optional[int] = None,
+    mode: str = "collapsed",  # "collapsed" or "level"
+    limit: int = 10,
+    score_threshold: float = 0.0,
+    raptor_repo: RaptorRepository = Depends(get_raptor_repository)
+) -> List[Dict[str, Any]]:
+    try:
+        if mode == "collapsed":
+            results = raptor_repo.search_collapsed_tree(
+                query=query,
+                paper_id=paper_id,
+                limit=limit,
+                score_threshold=score_threshold
+            )
+            return results
+        elif mode == "level":
+            if level is None:
+                raise HTTPException(status_code=400, detail="level must be provided when mode=level")
+            results = raptor_repo.search_by_level(
+                query=query,
+                level=level,
+                paper_id=paper_id,
+                limit=limit,
+                score_threshold=score_threshold
+            )
+            return results
+        else:
+            raise HTTPException(status_code=400, detail="Invalid mode. Use 'collapsed' or 'level'.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"RAPTOR search error: {e}")
+        print(f"[TRACEBACK]\n{traceback.format_exc()}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))

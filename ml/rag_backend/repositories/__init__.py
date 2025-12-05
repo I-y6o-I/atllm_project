@@ -1,3 +1,4 @@
 from .minio_repository import MinioRepository
 from .redis_repository import RedisRepository
 from .qdrant_repository import QdrantRepository
+from .raptor_repository import RaptorRepository

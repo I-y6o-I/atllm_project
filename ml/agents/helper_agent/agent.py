@@ -1,3 +1,4 @@
+import asyncio
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
 from agents.base import BaseAgent
@@ -22,6 +23,7 @@ import logging
 import os
 import os
 from agents.schemas import AgentState
+import traceback
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +44,7 @@ class HelperAgent(BaseAgent):
             self._qdrant_client = self._qdrant_repo.qdrant_client
             self._db = QdrantVectorStore(
                 client=self._qdrant_client,
-                collection_name="labs_collection",
+                collection_name=self._qdrant_repo.collection_name,
                 embedding=self._qdrant_repo.embedding_model,
                 # metadata_payload_key="payload",
                 content_payload_key="text"
@@ -51,7 +53,7 @@ class HelperAgent(BaseAgent):
                 search_type="similarity",
                 k=3,
                 search_kwargs={
-                    "score_threshold": SCORE_THRESHOLD,
+                    "score_threshold": 0.0,
                 }
             )
 
@@ -60,8 +62,7 @@ class HelperAgent(BaseAgent):
             logger.info("Vector storage loaded successfully")
         except Exception as e:
             logger.error(f"Vector storage load failed: {e}")
-            raise RuntimeError("Vector storage load failed") from e
-        
+            raise RuntimeError("Vector storage load failed") from e 
 
     def _load_llm(self) -> None:
         logger.info(f"Using {self.model_name} as LLM model")

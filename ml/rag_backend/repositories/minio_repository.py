@@ -56,6 +56,21 @@ class MinioRepository:
                 result.append((object_name, data))
         return result
 
+    def get_papers(self, paper_id: str) -> tp.List[tp.Tuple[str, bytes]] | None:
+        """Retrieve PDF papers from the papers bucket."""
+        bucket_name = "articles"
+
+        files = self.list_files(bucket_name, prefix=paper_id)
+        if not files:
+            return None
+
+        result = []
+        for object_name in files:
+            if object_name.lower().endswith(".pdf"):
+                data = self._get_file(bucket_name, object_name)
+                result.append((object_name, data))
+        return result if result else None
+
     def _get_file(self, bucket_name: str, object_name: str) -> bytes:
         try:
             response = self.client.get_object(bucket_name, object_name)

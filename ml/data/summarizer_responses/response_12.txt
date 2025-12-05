@@ -1,9 +1,0 @@
-paper examines an issue that to our knowledge has
-not been explored: advances in neural language
-models have come at a signiﬁcant cost in terms
-of increased computational complexity. Comput-
-ing the probability of a token sequence using non-
-neural techniques requires a number of phraselookups and perhaps a few arithmetic operations,
-whereas model inference with NLMs require large
-matrix multiplications consuming perhaps mil-
-lions of ﬂoating point operations (FLOPs). These

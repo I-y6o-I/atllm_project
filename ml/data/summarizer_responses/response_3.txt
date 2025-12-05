@@ -1,5 +1,0 @@
-overﬁtting and/or hitting a wall in performance. On the other hand, the latter might be faced with the
-inherent difﬁculties of going deep such as vanishing gradients or difﬁculty in feature propagation
-across deep RNN layers [Zhang et al., 2016b].
-This paper proposes Recurrently Controlled Recurrent Networks (RCRN), a new recurrent architecture
-and a general purpose neural building block for sequence modeling. RCRNs are characterized by

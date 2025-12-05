@@ -1,6 +1,0 @@
-[Page 3]
-Our work proposes a new way of enhancing the representation capability of RNNs without going
-deep. For the ﬁrst time, we propose a controller-listener architecture that uses one recurrent unit to
-control another recurrent unit. Our proposed RCRN consistently outperforms stacked BiLSTMs and
-achieves state-of-the-art results on several datasets. We outperform above-mentioned competitors
-such as DiSAN, SRUs, stacked BiLSTMs and sentence-state LSTMs.

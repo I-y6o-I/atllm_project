@@ -1,6 +1,0 @@
-self-attention to 8, the source and target word
-embedding size to 512, and the number of hidden
-units in feed-forward layers to 2048. We train
-the NMT model by using the Adam optimizer
-(Kingma et al. ,2014 ) with a batch size of 128
-sentences, and we shufﬂe all the training data at

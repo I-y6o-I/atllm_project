@@ -5,7 +5,7 @@ from agents.helper_agent.agent import HelperAgent
 from agents.summarizer_agent import SummarizerAgent
 from rag_backend.utils import check_postgres, setup_logging
 from rag_backend.api.routes import router
-from rag_backend.repositories import RedisRepository, MinioRepository, QdrantRepository, RaptorRepository
+from rag_backend.repositories import MinioRepository, QdrantRepository, RaptorRepository
 import logging
 
 setup_logging()
@@ -29,9 +29,6 @@ async def startup_events(app: FastAPI):
         raptor_repo=app.state.raptor_repository
     )
     logger.info("RAG Agent successfully loaded")
-
-    app.state.redis_repository = RedisRepository(db=1)
-    logger.info("Redis successfully loaded")
     yield
 
 app = FastAPI(docs_url="/api/v1/ml", lifespan=startup_events)

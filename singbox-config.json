@@ -1,0 +1,95 @@
+{
+  "log": {
+    "level": "info"
+  },
+
+  "dns": {
+    "servers": [
+      {
+        "tag": "dns-remote",
+        "address": "tls://8.8.8.8",
+        "detour": "VLESS-231c1a0d"
+      },
+      {
+        "tag": "dns-direct",
+        "address": "8.8.8.8",
+        "detour": "direct"
+      }
+    ],
+    "rules": [
+      {
+        "outbound": "any",
+        "server": "dns-direct"
+      }
+    ],
+    "final": "dns-remote"
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "tun0",
+      "address": ["172.20.0.1/30"],
+      "auto_route": true,
+      "strict_route": false,
+      "stack": "gvisor",
+      "sniff": true,
+      "sniff_override_destination": true
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "vless",
+      "tag": "VLESS-231c1a0d",
+      "server": "79.137.205.58",
+      "server_port": 443,
+      "uuid": "c790d43b-0e87-4f03-99dc-2492581cc81d",
+      "flow": "xtls-rprx-vision",
+      "tls": {
+        "enabled": true,
+        "server_name": "web.max.ru",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "firefox"
+        },
+        "reality": {
+          "enabled": true,
+          "public_key": "VKhQ2xhYw109siGfLqzv5in_JPHrYTESxbuZ8u3JlhA",
+          "short_id": ""
+        }
+      }
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    },
+    {
+      "type": "block",
+      "tag": "block"
+    }
+  ],
+
+  "route": {
+    "rules": [
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "ip_cidr": [
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "192.168.0.0/16",
+          "127.0.0.0/8"
+        ],
+        "outbound": "direct"
+      },
+      {
+        "inbound": "tun-in",
+        "outbound": "VLESS-231c1a0d"
+      }
+    ],
+    "auto_detect_interface": true,
+    "final": "VLESS-231c1a0d"
+  }
+}

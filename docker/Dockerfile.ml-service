@@ -1,22 +1,61 @@
 FROM python:3.11-slim-bookworm
 
 # Create non-root user
-RUN useradd --create-home appuser
+RUN useradd -m appuser
 WORKDIR /home/appuser/app
 
-# Minimal tools
-RUN apt-get update && apt-get install -y --no-install-recommends dos2unix curl netcat-openbsd && \
-    rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    netcat-openbsd \
+    dos2unix \
+    iproute2 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy app and install deps
-COPY --chown=appuser:appuser ml/ /home/appuser/app/ml/
+# Copy requirements first for better caching
 COPY --chown=appuser:appuser ml/requirements.txt /home/appuser/app/requirements.txt
-COPY --chown=appuser:appuser ml/startup.sh /home/appuser/app/startup.sh
-RUN pip install --no-cache-dir -r /home/appuser/app/requirements.txt && \
-    dos2unix /home/appuser/app/startup.sh && chmod +x /home/appuser/app/startup.sh
 
-USER appuser
+# Install Python dependencies
+RUN pip install --no-cache-dir -r /home/appuser/app/requirements.txt
+
+# Copy app files
+COPY --chown=appuser:appuser ml/ /home/appuser/app/ml/
+COPY --chown=appuser:appuser ml/startup.sh /home/appuser/app/startup.sh
+RUN dos2unix /home/appuser/app/startup.sh && chmod +x /home/appuser/app/startup.sh
+
+# Create entrypoint script that sets up routing AND starts the app
+RUN echo '#!/bin/sh\n\
+set -e\n\
+\n\
+echo "Setting up network routes..."\n\
+\n\
+# Add explicit routes to Docker networks BEFORE changing default\n\
+# app-network: 172.25.0.0/24\n\
+ip route add 172.25.0.0/24 dev eth0 2>/dev/null || true\n\
+\n\
+# ml-vpn-net: 172.26.0.0/24 (for singbox)\n\
+ip route add 172.26.0.0/24 dev eth1 2>/dev/null || true\n\
+\n\
+# Delete default route and set singbox as gateway for internet traffic\n\
+ip route del default 2>/dev/null || true\n\
+ip route add default via 172.26.0.2 dev eth1 2>/dev/null || echo "Warning: Could not set VPN route"\n\
+\n\
+# Set DNS\n\
+echo "nameserver 8.8.8.8" > /etc/resolv.conf\n\
+\n\
+echo "Final routing table:"\n\
+ip route\n\
+echo ""\n\
+echo "Testing connectivity to postgres-ml..."\n\
+nc -zv 172.25.0.0/24 5432 2>&1 || echo "Direct IP test skipped"\n\
+\n\
+# Start the application as appuser\n\
+exec su -s /bin/sh appuser -c "/home/appuser/app/startup.sh"' > /entrypoint.sh \
+    && chmod +x /entrypoint.sh
+
 WORKDIR /home/appuser/app/ml
 ENV DEVICE=cpu
 EXPOSE 8082
-CMD ["/home/appuser/app/startup.sh"]
+
+USER root
+ENTRYPOINT ["/entrypoint.sh"]

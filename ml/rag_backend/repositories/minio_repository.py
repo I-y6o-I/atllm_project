@@ -8,7 +8,7 @@ import io
 class MinioRepository:
     def __init__(self):
         self.client = Minio(
-            endpoint="minio:9000",
+            endpoint="172.25.0.12:9000",
             access_key=os.getenv("MINIO_ROOT_USER"),
             secret_key=os.getenv("MINIO_ROOT_PASSWORD"),
             secure=False

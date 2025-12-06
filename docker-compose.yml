@@ -1,6 +1,16 @@
 networks:
   app-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24
+          gateway: 172.25.0.1
+  ml-vpn-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.0.0/24
+          gateway: 172.26.0.1
 
 volumes:
   postgres-users-data:
@@ -43,14 +53,14 @@ services:
       context: .
       dockerfile: docker/Dockerfile.frontend
       args:
-        - VITE_API_GATEWAY_URL=http://localhost
+        - VITE_API_GATEWAY_URL=http://158.160.161.151
     environment:
       - NODE_ENV=production
       - VITE_API_GATEWAY_ENDPOINT=/api/v1
       - VITE_AUTH_API_ENDPOINT=/api/v1/auth
       - AUTH_SERVICE_HOST_NGINX=auth-service
       - API_GATEWAY_HOST_NGINX=api-gateway
-      - VITE_ML_ENDPOINT=http://localhost:8082
+      - VITE_ML_ENDPOINT=http://158.160.161.151:8082
     # ports:
     #   - "80:80"
     expose:
@@ -191,28 +201,21 @@ services:
       - CODE_DIR=/app/ml/data/predator-pray-22/code
       - POSTGRES_USER=ml_user
       - POSTGRES_PASSWORD=${POSTGRES_ML_PASSWORD:-password}
-      - POSTGRES_HOST=postgres-ml
+      - POSTGRES_HOST=172.25.0.10
       - POSTGRES_PORT=5432
       - POSTGRES_DB=chat_history_db
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minioadmin}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minioadmin}
       - REDIS_BROKER_URL=${REDIS_BROKER_URL:-redis://ml-redis-broker:6379/0}
-      - QDRANT_HOST=${QDRANT_HOST:-ml-qdrant}
+      - QDRANT_HOST=172.25.0.11
       - QDRANT_PORT=${QDRANT_PORT:-6333}
     expose:
       - "8082"
     volumes:
       - ./ml:/app/ml
       - ml-models:/app/models
-    networks:
-      - app-network
-    # restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8082/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 300s
+    cap_add:
+      - NET_ADMIN
     depends_on:
       postgres-ml:
         condition: service_healthy
@@ -220,6 +223,18 @@ services:
         condition: service_started
       ml-qdrant:
         condition: service_started
+      singbox-ml:
+        condition: service_started
+    privileged: true
+    networks:
+      app-network:
+        ipv4_address: 172.25.0.100
+        aliases:
+          - ml-service
+      ml-vpn-net:
+        ipv4_address: 172.26.0.3
+    restart: unless-stopped
+    # Remove the command - use Dockerfile entrypoint instead
 
   postgres-ml:
     image: postgres:15-alpine
@@ -230,14 +245,14 @@ services:
     volumes:
       - postgres-ml-data:/var/lib/postgresql/data
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 172.25.0.10
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ml_user -d chat_history_db"]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 300s
-
 
   ml-qdrant:
     image: qdrant/qdrant:latest
@@ -246,7 +261,8 @@ services:
     volumes:
       - qdrant-data:/qdrant/storage
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 172.25.0.11
     restart: unless-stopped
 
   postgres-users:
@@ -297,7 +313,8 @@ services:
     volumes:
       - minio-data:/data
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 172.25.0.12
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/live"]
@@ -305,4 +322,20 @@ services:
       timeout: 5s
       retries: 5
       start_period: 300s
-
+  
+  singbox-ml:
+    image: ghcr.io/sagernet/sing-box
+    container_name: singbox-ml
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    volumes:
+      - ./singbox-config.json:/etc/sing-box/config.json:ro
+    command: ["run", "-c", "/etc/sing-box/config.json"]
+    networks:
+      ml-vpn-net:
+        ipv4_address: 172.26.0.2
+    restart: unless-stopped
+    sysctls:
+      - net.ipv4.ip_forward=1

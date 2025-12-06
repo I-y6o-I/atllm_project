@@ -25,6 +25,23 @@ class AskService:
                 }
             }
 
+            # In benchmark mode, always start fresh without chat history
+            if request.benchmark:
+                logger.info("Benchmark mode: skipping chat history")
+                input_state = RAGState(
+                    uuid=request.uuid,
+                    assignment_id=request.assignment_id,
+                    query=request.content,
+                    docs='',
+                    msg_state=MessagesState(
+                        thread_id=f"benchmark_{request.uuid}",  # Separate thread for benchmark
+                        messages=[
+                            SystemMessage(content=SYSTEM_PROMPT)
+                        ]
+                    ) # type: ignore
+                )
+                return input_state, config
+
             last_state = await self._agent.get_last_state(config=config)
             logger.info("Last state retrieved")
 

@@ -14,25 +14,21 @@ def retrieve(state: RAGState, raptor_repo: RaptorRepository) -> dict[str, str]:
             query=state.query,
             top_k_level2=1,
             top_k_level1=5,
-            top_k_level0=20,
+            top_k_level0=5,
             score_threshold=0.6
         )
         
-        paper_results = [
-            r for r in results 
-            if r["metadata"].get("paper_id") == state.assignment_id
-        ]
         
-        if not paper_results:
+        if not results:
             logger.info(f"No RAPTOR results for paper {state.assignment_id}, using all results")
-            paper_results = results
+
         
         serialized = "\n\n".join(
             f"[Chunk {i+1}]: {r['text']}"
-            for i, r in enumerate(paper_results)
+            for i, r in enumerate(results)
         )
         
-        logger.info(f"Retrieved {len(paper_results)} chunks via RAPTOR")
+        logger.info(f"Retrieved {len(results)} chunks via RAPTOR")
         
         return {"docs": serialized}
         

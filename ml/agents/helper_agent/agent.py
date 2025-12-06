@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class HelperAgent(BaseAgent):
     def __init__(self, raptor_repo: RaptorRepository):
-        self.model_name = "groq/compound-mini"
+        self.model_name = "meta-llama/llama-4-scout-17b-16e-instruct"
         self._key_manager = GroqKeyManager()
 
         self._raptor_repo = raptor_repo
@@ -47,12 +47,11 @@ class HelperAgent(BaseAgent):
 
         try:
             self._llm.invoke("ping")
-            logger.info("Gorq LLM is available")
-            return None
+            logger.info("Groq LLM connection validated successfully")
         except Exception as e:
-                self._key_manager.switch_key()
-                logger.info(f"Key invalid, switched to next key {self._key_manager.idx}...")
-                return self._load_llm()
+            self._key_manager.switch_key()
+            logger.info(f"Key invalid, switched to next key {self._key_manager.idx}...")
+            return self._validate_llm_connection()
 
     def _load_graph_builder(self) -> None:
         try:
@@ -69,14 +68,16 @@ class HelperAgent(BaseAgent):
                 "query_rag_llm",
                 partial(
                     query_rag_llm,
-                    llm=self._llm,
+                    model_name=self.model_name,
+                    key_manager=self._key_manager,
                 )
             )
             self._graph_builder.add_node(
                 "query_llm",
                 partial(
                     query_llm,
-                    llm=self._llm,
+                    model_name=self.model_name,
+                    key_manager=self._key_manager,
                 )
             )
 

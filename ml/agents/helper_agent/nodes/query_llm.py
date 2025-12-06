@@ -1,12 +1,15 @@
 from agents.helper_agent.schemas.rag_state import RAGState
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import MessagesState
-from langchain_core.language_models import BaseLanguageModel
+from agents.groq_key_manager import GroqKeyManager
 from agents.helper_agent.utils import format_model_response, format_prompt
+from agents.helper_agent.utils.groq_utils import generate_with_retry
+
 
 def query_llm(
         state: RAGState,
-        llm: BaseLanguageModel,
+        model_name: str,
+        key_manager: GroqKeyManager,
     ) -> dict:
 
     messages = state.msg_state["messages"]
@@ -16,7 +19,7 @@ def query_llm(
         chat_history=state.msg_state["messages"],
     )
 
-    response = llm.invoke(prompt)
+    response = generate_with_retry(prompt, model_name, key_manager)
 
     new_messages = messages + [
         HumanMessage(content=state.query),

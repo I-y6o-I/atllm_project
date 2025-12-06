@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class HelperAgent(BaseAgent):
     def __init__(self, raptor_repo: RaptorRepository):
-        self.model_name = "qwen/qwen3-32b"
+        self.model_name = "groq/compound-mini"
         self._key_manager = GroqKeyManager()
 
         self._raptor_repo = raptor_repo

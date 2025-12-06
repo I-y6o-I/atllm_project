@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-12-06T03:20:15.965270",
+  "config": {
+    "sample_size": null,
+    "k_values": [
+      1,
+      5,
+      10,
+      20
+    ],
+    "ml_service_url": "http://localhost/api/v1/ml"
+  },
+  "metrics": {
+    "MRR": 0.4259504800961629,
+    "Recall@1": 0.12999601838490726,
+    "Hit@1": 0.28888888888888886,
+    "Recall@5": 0.45028381700603926,
+    "Hit@5": 0.6044444444444445,
+    "Recall@10": 0.5871253273475496,
+    "Hit@10": 0.6933333333333334,
+    "Recall@20": 0.6845460958794292,
+    "Hit@20": 0.7570370370370371
+  },
+  "per_query_summary": {
+    "total_queries": 675,
+    "queries_with_relevant": 511,
+    "avg_retrieved": 20.0,
+    "avg_relevant": 4.694814814814815
+  }
+}

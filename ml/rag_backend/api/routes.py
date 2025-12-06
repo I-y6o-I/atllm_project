@@ -95,36 +95,25 @@ async def build_tree(
 @router.get("/raptor_search")
 async def raptor_search(
     query: str,
-    paper_id: Optional[str] = None,
-    level: Optional[int] = None,
-    mode: str = "collapsed",  # "collapsed" or "level"
-    limit: int = 10,
-    score_threshold: float = 0.0,
-    level_boost: float = 0.05,
+    mode: Optional[str] = "raptor", # "raptor" or "all_chunks"
     raptor_repo: RaptorRepository = Depends(get_raptor_repository)
 ) -> List[Dict[str, Any]]:
     try:
-        if mode == "collapsed":
+        if mode == "all_chunks":
+            results = raptor_repo.search_by_level(
+                query=query,
+                level=0,
+                limit=20
+            )
+        else:
             results = raptor_repo.search_top_down(
                 query=query,
                 top_k_level2=1,   # default: 1
                 top_k_level1=5,   # default: 5
                 top_k_level0=20   # default: 20
             )
-            return results
-        elif mode == "level":
-            if level is None:
-                raise HTTPException(status_code=400, detail="level must be provided when mode=level")
-            results = raptor_repo.search_by_level(
-                query=query,
-                level=level,
-                paper_id=paper_id,
-                limit=limit,
-                score_threshold=score_threshold
-            )
-            return results
-        else:
-            raise HTTPException(status_code=400, detail="Invalid mode. Use 'collapsed' or 'level'.")
+        return results
+    
     except HTTPException:
         raise
     except Exception as e:

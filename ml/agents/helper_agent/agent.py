@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class HelperAgent(BaseAgent):
     def __init__(self, raptor_repo: RaptorRepository):
-        self.model_name = "meta-llama/llama-4-scout-17b-16e-instruct"
+        self.model_name = "llama-3.3-70b-versatile"
         self._key_manager = GroqKeyManager()
 
         self._raptor_repo = raptor_repo
@@ -51,7 +51,7 @@ class HelperAgent(BaseAgent):
         except Exception as e:
             self._key_manager.switch_key()
             logger.info(f"Key invalid, switched to next key {self._key_manager.idx}...")
-            return self._validate_llm_connection()
+            return self._load_llm()
 
     def _load_graph_builder(self) -> None:
         try:

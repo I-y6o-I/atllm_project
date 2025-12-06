@@ -14,7 +14,7 @@ def retrieve(state: RAGState, raptor_repo: RaptorRepository) -> dict[str, str]:
             query=state.query,
             top_k_level2=1,
             top_k_level1=5,
-            top_k_level0=5,
+            top_k_level0=20,
             score_threshold=0.6
         )
         

@@ -54,6 +54,7 @@ services:
       dockerfile: docker/Dockerfile.frontend
       args:
         - VITE_API_GATEWAY_URL=http://158.160.161.151
+        - VITE_MINIO_ENDPOINT=http://158.160.161.151:9000
     environment:
       - NODE_ENV=production
       - VITE_API_GATEWAY_ENDPOINT=/api/v1

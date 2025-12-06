@@ -51,7 +51,6 @@ export default function ArticlePage() {
 
         const minioEndpoint = import.meta.env.VITE_MINIO_ENDPOINT || 'http://localhost:9000';
         
-        
         const pdfUrl = `${minioEndpoint}/articles/${id}/article.pdf`;
 
         const pdfResponse = await fetch(pdfUrl, {
